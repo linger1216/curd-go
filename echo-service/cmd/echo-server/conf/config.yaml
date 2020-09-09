@@ -1,0 +1,3 @@
+server:
+  debugAddr: ":21211"
+  httpAddr: ":21212"
