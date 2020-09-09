@@ -1,1 +1,1 @@
-# curd-go
+# go front template
