@@ -117,5 +117,9 @@ func ToString(v interface{}) string {
 	if ret, ok := v.(string); ok {
 		return ret
 	}
+
+	if ret, ok := v.([]byte); ok {
+		return string(ret)
+	}
 	return ""
 }

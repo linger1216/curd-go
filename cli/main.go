@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"github.com/linger1216/go-front/cli/meta"
+	"github.com/linger1216/go-front/utils"
 	"github.com/manifoldco/promptui"
 	"strings"
 )
@@ -28,41 +30,52 @@ func NewCliConfig() *CliConfig {
 
 func main() {
 	cliConfig := NewCliConfig()
-	var err error
+	//var err error
+	//
+	//cliConfig.projectName, err = inputCli("projectName", "DefaultProjectName", spaceValid)
+	//if err != nil || len(cliConfig.projectName) == 0 {
+	//	return
+	//}
+	//
+	//cliConfig.applicationName, err = inputCli("applicationName", "DefaultApplicationName", spaceValid)
+	//if err != nil || len(cliConfig.applicationName) == 0 {
+	//	return
+	//}
+	//
+	//cliConfig.maintainer, err = inputCli("maintainer", "DefaultMaintainer", spaceValid)
+	//if err != nil || len(cliConfig.maintainer) == 0 {
+	//	return
+	//}
+	//
+	//cliConfig.postgresUrl, err = inputCli("postgresUrl", "", nil)
+	//if err != nil || len(cliConfig.postgresUrl) == 0 {
+	//	return
+	//}
+	//
+	//cliConfig.localCache, err = ConfirmCli("need local cache")
+	//if err != nil {
+	//	return
+	//}
+	//
+	//confirm, err := ConfirmCli("all correct")
+	//if err != nil {
+	//	return
+	//}
+	//
+	//if confirm {
+	//	fmt.Println(cliConfig)
+	//}
 
-	cliConfig.projectName, err = inputCli("projectName", "DefaultProjectName", spaceValid)
-	if err != nil || len(cliConfig.projectName) == 0 {
-		return
-	}
+	cliConfig.postgresUrl = "postgres://lid.guan:@localhost:15432/zhigan?sslmode=disable"
 
-	cliConfig.applicationName, err = inputCli("applicationName", "DefaultApplicationName", spaceValid)
-	if err != nil || len(cliConfig.applicationName) == 0 {
-		return
-	}
+	pg := meta.NewPostgresMeta(utils.NewPostgres(&utils.PostgresConfig{
+		Uri:     cliConfig.postgresUrl,
+		MaxIdle: 0,
+		MaxOpen: 0,
+	}))
 
-	cliConfig.maintainer, err = inputCli("maintainer", "DefaultMaintainer", spaceValid)
-	if err != nil || len(cliConfig.maintainer) == 0 {
-		return
-	}
+	pg.GetInfo()
 
-	cliConfig.postgresUrl, err = inputCli("postgresUrl", "", nil)
-	if err != nil || len(cliConfig.postgresUrl) == 0 {
-		return
-	}
-
-	cliConfig.localCache, err = ConfirmCli("need local cache")
-	if err != nil {
-		return
-	}
-
-	confirm, err := ConfirmCli("all correct")
-	if err != nil {
-		return
-	}
-
-	if confirm {
-		fmt.Println(cliConfig)
-	}
 }
 
 func inputCli(label, def string, validFn func(input string) error) (string, error) {
