@@ -1,4 +1,4 @@
-package core
+package svc
 
 type Echo struct {
 	Id             string   `json:"id" yaml:"id" `

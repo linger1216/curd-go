@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"math"
 	"strconv"
+	"strings"
+	"unicode"
 )
 
 func UInt64ToString(n uint64) string {
@@ -120,6 +122,46 @@ func ToString(v interface{}) string {
 
 	if ret, ok := v.([]byte); ok {
 		return string(ret)
+	}
+	return ""
+}
+
+// 驼峰式写法转为下划线写法
+func Camel2Case(name string) string {
+	var buffer bytes.Buffer
+	for i, r := range name {
+		if unicode.IsUpper(r) {
+			if i != 0 {
+				buffer.WriteByte('_')
+			}
+			buffer.WriteRune(unicode.ToLower(r))
+		} else {
+			buffer.WriteByte(byte(r))
+		}
+	}
+	return buffer.String()
+}
+
+// 下划线写法转为驼峰写法
+// 大小大小
+func Case2Camel(name string) string {
+	name = strings.Replace(name, "_", " ", -1)
+	name = strings.Title(name)
+	return strings.Replace(name, " ", "", -1)
+}
+
+// 首字母大写
+func UpperFirst(str string) string {
+	for i, v := range str {
+		return string(unicode.ToUpper(v)) + str[i+1:]
+	}
+	return ""
+}
+
+// 首字母小写
+func LowerFirst(str string) string {
+	for i, v := range str {
+		return string(unicode.ToLower(v)) + str[i+1:]
 	}
 	return ""
 }

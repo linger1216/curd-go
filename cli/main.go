@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/linger1216/go-front/cli/meta"
-	"github.com/linger1216/go-front/utils"
 	"github.com/manifoldco/promptui"
 	"strings"
 )
@@ -29,7 +27,7 @@ func NewCliConfig() *CliConfig {
 }
 
 func main() {
-	cliConfig := NewCliConfig()
+	//cliConfig := NewCliConfig()
 	//var err error
 	//
 	//cliConfig.projectName, err = inputCli("projectName", "DefaultProjectName", spaceValid)
@@ -65,16 +63,16 @@ func main() {
 	//if confirm {
 	//	fmt.Println(cliConfig)
 	//}
+	//
+	//cliConfig.postgresUrl = "postgres://lid.guan:@localhost:15432/zhigan?sslmode=disable"
 
-	cliConfig.postgresUrl = "postgres://lid.guan:@localhost:15432/zhigan?sslmode=disable"
-
-	pg := meta.NewPostgresMeta(utils.NewPostgres(&utils.PostgresConfig{
-		Uri:     cliConfig.postgresUrl,
-		MaxIdle: 0,
-		MaxOpen: 0,
-	}))
-
-	pg.GetInfo()
+	//pg := meta.NewPostgresMeta(utils.NewPostgres(&utils.PostgresConfig{
+	//	Uri:     cliConfig.postgresUrl,
+	//	MaxIdle: 0,
+	//	MaxOpen: 0,
+	//}))
+	//
+	//pg.GetInfo()
 
 }
 

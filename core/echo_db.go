@@ -125,7 +125,7 @@ func (m *MetaTable) OnConflictDDL() string {
 	return buf.String()
 }
 
-func (m *MetaTable) Upsert(echos ...*Echo) (string, []interface{}) {
+func (m *MetaTable) Upsert(echos ...*svc.Echo) (string, []interface{}) {
 	size := len(echos)
 	values := make([]string, 0, size)
 	args := make([]interface{}, 0, size*m.ColumnLength())

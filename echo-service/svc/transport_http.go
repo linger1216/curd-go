@@ -34,7 +34,6 @@ func errorEncoder(_ context.Context, err error, w http.ResponseWriter) {
 }
 
 func MakeHTTPHandler(engine *gin.Engine, endpoints Endpoints) {
-
 	serverOptions := []svchttp.ServerOption{
 		svchttp.ServerBefore(headersToContext),
 		svchttp.ServerErrorEncoder(errorEncoder),
@@ -42,45 +41,57 @@ func MakeHTTPHandler(engine *gin.Engine, endpoints Endpoints) {
 		svchttp.ServerAfter(svchttp.SetContentType(contentType)),
 	}
 
-	engine.Handle("POST", "/eg/echo", gin.WrapH(svchttp.NewServer(
-		endpoints.CreateEchoEndpoint,
-		DecodeHTTPCreateEchoRequest,
-		EncodeHTTPGenericResponse,
-		serverOptions...,
-	)))
+	engine.Handle("POST", "/eg/echo", func(c *gin.Context) {
+		svchttp.NewServer(
+			endpoints.CreateEchoEndpoint,
+			svchttp.WrapS(c, DecodeHTTPCreateEchoRequest),
+			EncodeHTTPGenericResponse,
+			serverOptions...,
+		).ServeHTTP(c.Writer, c.Request)
+	})
 
-	engine.Handle("DELETE", "/eg/echo/:ids", gin.WrapH(svchttp.NewServer(
-		endpoints.DeleteEchoEndpoint,
-		DecodeHTTPDeleteEchoRequest,
-		EncodeHTTPGenericResponse,
-		serverOptions...,
-	)))
+	engine.Handle("DELETE", "/eg/echo/:ids", func(c *gin.Context) {
+		svchttp.NewServer(
+			endpoints.DeleteEchoEndpoint,
+			svchttp.WrapS(c, DecodeHTTPDeleteEchoRequestV2),
+			EncodeHTTPGenericResponse,
+			serverOptions...,
+		).ServeHTTP(c.Writer, c.Request)
+	})
 
-	engine.Handle("PUT", "/eg/echo", gin.WrapH(svchttp.NewServer(
-		endpoints.UpdateEchoEndpoint,
-		DecodeHTTPUpdateEchoRequest,
-		EncodeHTTPGenericResponse,
-		serverOptions...,
-	)))
+	engine.Handle("PUT", "/eg/echo", func(c *gin.Context) {
+		svchttp.NewServer(
+			endpoints.UpdateEchoEndpoint,
+			svchttp.WrapS(c, DecodeHTTPUpdateEchoRequest),
+			EncodeHTTPGenericResponse,
+			serverOptions...,
+		).ServeHTTP(c.Writer, c.Request)
+	})
 
-	engine.Handle("GET", "/eg/echo", gin.WrapH(svchttp.NewServer(
-		endpoints.ListEchoEndpoint,
-		DecodeHTTPListEchoRequest,
-		EncodeHTTPGenericResponse,
-		serverOptions...,
-	)))
+	engine.Handle("GET", "/eg/echo", func(c *gin.Context) {
+		svchttp.NewServer(
+			endpoints.ListEchoEndpoint,
+			svchttp.WrapS(c, DecodeHTTPListEchoRequest),
+			EncodeHTTPGenericResponse,
+			serverOptions...,
+		).ServeHTTP(c.Writer, c.Request)
+	})
 
-	engine.Handle("HEAD", "/eg/echo", gin.WrapH(svchttp.NewServer(
-		endpoints.ListEchoEndpoint,
-		DecodeHTTPListHeadEchoRequest,
-		EncodeHTTPGenericResponse,
-		serverOptions...,
-	)))
+	engine.Handle("HEAD", "/eg/echo", func(c *gin.Context) {
+		svchttp.NewServer(
+			endpoints.ListEchoEndpoint,
+			svchttp.WrapS(c, DecodeHTTPListHeadEchoRequest),
+			EncodeHTTPGenericResponse,
+			serverOptions...,
+		).ServeHTTP(c.Writer, c.Request)
+	})
 
-	engine.Handle("GET", "/eg/echo/:ids", gin.WrapH(svchttp.NewServer(
-		endpoints.GetEchoEndpoint,
-		DecodeHTTPGetEchoRequest,
-		EncodeHTTPGenericResponse,
-		serverOptions...,
-	)))
+	engine.Handle("GET", "/eg/echo/:ids", func(c *gin.Context) {
+		svchttp.NewServer(
+			endpoints.GetEchoEndpoint,
+			svchttp.WrapS(c, DecodeHTTPGetEchoRequest),
+			EncodeHTTPGenericResponse,
+			serverOptions...,
+		).ServeHTTP(c.Writer, c.Request)
+	})
 }

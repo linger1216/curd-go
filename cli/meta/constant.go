@@ -1,5 +1,7 @@
 package meta
 
+import "strings"
+
 const (
 	ShowTablesQuery = `select relname as table_name,cast(obj_description(relfilenode,'pg_class') as varchar) as comment from pg_class c 
 where  relkind = 'r' and relname not like 'pg_%' and relname not like 'sql_%' and relchecks=0 order by relname;`
@@ -29,17 +31,21 @@ ORDER BY a.attnum;
 `
 )
 
-type ColumnInfo struct {
-	Name    string
-	Type    string
-	Comment string
-	Default string
-	Primary bool
-}
-
-type TableInfo struct {
-	Name     string
-	Comment  string
-	IndexDDL []string
-	Columns  []*ColumnInfo
+func pgType2GoType(t string) string {
+	x := strings.ToLower(t)
+	switch x {
+	case "varchar", "character varying":
+		return "string"
+	case "bigint":
+		return "int64"
+	case "integer", "int":
+		return "int"
+	case "geometry(geometry,4326)":
+		return "geom.Geometry"
+	case "character varying[]":
+		return "[]string"
+	case "integer[]":
+		return "[]int"
+	}
+	return ""
 }
