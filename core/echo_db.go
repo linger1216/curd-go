@@ -4,202 +4,129 @@ import (
 	"bytes"
 	"fmt"
 	jsoniter "github.com/json-iterator/go"
+	"github.com/lib/pq"
 	"github.com/linger1216/go-front/echo-service/svc"
 	"github.com/linger1216/go-front/utils"
 	"strings"
 	"time"
 )
 
-type MetaColumn struct {
-	Name string `json:"Name"`
-	// int64, int, string, geometry
-	Type    string `json:"type"`
-	Primary bool   `json:"primary"`
-	// 默认值
-	Default string `json:"default"`
-	// 索引语句
-	Index  string `json:"index"`
-	dbType string
+type EchoDDL struct {
 }
 
-func (m *MetaColumn) ColumnDDL() string {
-	var primary string
-	if m.Primary {
-		primary = "primary key"
-	}
-	return fmt.Sprintf("%s %s %s %s", m.Name, m.dbType, primary, m.Default)
-}
-
-type MetaTable struct {
-	Name    string        `json:"Name"`
-	Columns []*MetaColumn `json:"columns"`
-}
-
-func NewMetaTable(buf []byte) *MetaTable {
-	ret := &MetaTable{}
-	if err := jsoniter.ConfigFastest.Unmarshal(buf, ret); err != nil {
-		panic(err)
-	}
-
-	for i := range ret.Columns {
-		switch strings.ToLower(ret.Columns[i].Name) {
-		case "id":
-			ret.Columns[i].Primary = true
-		case "create_time", "update_time":
-			ret.Columns[i].Default = "default extract(epoch from now())::bigint"
-		}
-
-		switch strings.ToLower(ret.Columns[i].Type) {
-		case "string":
-			ret.Columns[i].dbType = "varchar"
-		case "int64":
-			ret.Columns[i].dbType = "bigint"
-		case "int":
-			ret.Columns[i].dbType = "int"
-		case "geometry":
-			ret.Columns[i].dbType = "geometry(Geometry, 4326)"
-		}
-	}
+func NewEchoDDL() *EchoDDL {
+	ret := &EchoDDL{}
 	return ret
 }
 
-func (m *MetaTable) ColumnsString() string {
-	arr := make([]string, 0, len(m.Columns))
-	for i := range m.Columns {
-		arr = append(arr, m.Columns[i].Name)
-	}
-	return strings.Join(arr, ",")
+func (m *EchoDDL) Table() string {
+	return `echo_table`
 }
 
-func (m *MetaTable) ColumnLength() int {
-	arr := make([]string, 0, len(m.Columns))
-	for i := range m.Columns {
-		arr = append(arr, m.Columns[i].Name)
-	}
-	return len(arr)
+func (m *EchoDDL) ColumnsString() string {
+	return `id,age,name,geometry,books,tags,create_time,update_time`
 }
 
-func (m *MetaTable) CreateTable() string {
+func (m *EchoDDL) CreateTableDDL() string {
 	var buf bytes.Buffer
-	buf.WriteString(fmt.Sprintf("create table if not exists %s", m.Name))
-	buf.WriteString("(\n")
-	for i := range m.Columns {
-		buf.WriteString(m.Columns[i].ColumnDDL())
-		if i < len(m.Columns)-1 {
-			buf.WriteByte(',')
-		}
-		buf.WriteByte('\n')
-	}
-	buf.WriteString(");\n")
 	return buf.String()
 }
 
-func (m *MetaTable) PrimaryColumn() *MetaColumn {
-	for i := range m.Columns {
-		if m.Columns[i].Primary {
-			return m.Columns[i]
-		}
-	}
-	return nil
-}
-
-func (m *MetaTable) OnConflictDDL() string {
+func (m *EchoDDL) IndexTableDDL() string {
 	var buf bytes.Buffer
-	buf.WriteString(fmt.Sprintf("on conflict (%s) do update set\n", m.PrimaryColumn().Name))
-	for i := range m.Columns {
-		if !m.Columns[i].Primary {
-
-			if m.Columns[i].Name == "update_time" {
-				buf.WriteString(fmt.Sprintf("%s=GREATEST(%s.%s, excluded.%s)", m.Columns[i].Name, m.Name, m.Columns[i].Name, m.Columns[i].Name))
-			} else {
-				buf.WriteString(fmt.Sprintf("%s=excluded.%s", m.Columns[i].Name, m.Columns[i].Name))
-			}
-			if i < len(m.Columns)-1 {
-				buf.WriteByte(',')
-			} else {
-				buf.WriteByte(';')
-			}
-			buf.WriteByte('\n')
-		}
-	}
 	return buf.String()
 }
 
-func (m *MetaTable) Upsert(echos ...*svc.Echo) (string, []interface{}) {
+func (m *EchoDDL) OnConflictDDL() string {
+	return `
+on conflict (id) 
+do update set 
+age = excluded.age, 
+name = excluded.name, 
+geometry = excluded.geometry, 
+books = excluded.books, 
+tags = excluded.tags,
+update_time = GREATEST(asset.update_time, excluded.update_time);
+`
+}
+
+func (m *EchoDDL) Upsert(echos ...*svc.Echo) (string, []interface{}) {
+	cols := strings.Split(m.ColumnsString(), ",")
 	size := len(echos)
 	values := make([]string, 0, size)
-	args := make([]interface{}, 0, size*m.ColumnLength())
+	args := make([]interface{}, 0, size*len(cols))
 	for i, v := range echos {
 		if len(v.Id) == 0 {
 			v.Id = utils.Generate()
 		}
+
 		var createTime, updateTime int64
 		if v.CreateTime == 0 {
 			createTime = time.Now().Unix()
 		} else {
 			createTime = v.CreateTime
 		}
+
 		if v.UpdateTime == 0 {
 			updateTime = time.Now().Unix()
 		} else {
 			updateTime = v.UpdateTime
 		}
-		values = append(values, utils.ValuesPlaceHolder(i*m.ColumnLength(), m.ColumnLength()))
-		args = append(args, v.Id, v.BoundingAreaId, v.AccessKey, v.GeofenceId, v.FloorId, v.Floor, v.RoomId,
-			strings.Join(v.Macs, ","), createTime, updateTime)
+
+		geometry, err := jsoniter.ConfigFastest.Marshal(v.Geometry)
+		if err != nil {
+			panic(err)
+		}
+		values = append(values, utils.ValuesPlaceHolder(i*len(cols), len(cols)))
+		args = append(args, v.Id, v.Age, v.Name, geometry, pq.Array(v.Books), pq.Array(v.Tags), createTime, updateTime)
 	}
 
-	query := fmt.Sprintf(`insert into %s (%s) values %s %s`, m.Name, m.ColumnsString(),
+	query := fmt.Sprintf(`insert into %s (%s) values %s %s`, m.Table(), m.ColumnsString(),
 		strings.Join(values, ","), m.OnConflictDDL())
 	return query, args
 }
 
-func (m *MetaTable) List(in *svc.ListEchoRequest) (string, []interface{}) {
+func (m *EchoDDL) List(in *svc.ListEchoRequest) (string, []interface{}) {
 	firstCond := true
 	var buffer bytes.Buffer
 	if in.Header {
-		buffer.WriteString(fmt.Sprintf("select count(1) from %s", m.Name))
+		buffer.WriteString(fmt.Sprintf("select count(1) from %s", m.Table()))
 	} else {
-		buffer.WriteString(fmt.Sprintf("select * from %s", m.Name))
+		buffer.WriteString(fmt.Sprintf("select *,st_asgeojson(geometry) from %s", m.Table()))
 	}
 
-	if len(in.AccessKeys) > 0 {
-		query := fmt.Sprintf("%s access_key in (%s)", utils.CondSql(firstCond), utils.ArraySqlIn(in.AccessKeys...))
+	if len(in.Ages) > 0 {
+		query := fmt.Sprintf("%s age in (%s)", utils.CondSql(firstCond), utils.SqlIntegerIn(in.Ages...))
 		buffer.WriteString(query)
 		firstCond = false
 	}
 
-	if len(in.BoundingAreaIds) > 0 {
-		query := fmt.Sprintf("%s bounding_area_id in (%s)", utils.CondSql(firstCond), utils.ArraySqlIn(in.BoundingAreaIds...))
+	if len(in.Names) > 0 {
+		query := fmt.Sprintf("%s name in (%s)", utils.CondSql(firstCond), utils.SqlStringIn(in.Names...))
 		buffer.WriteString(query)
 		firstCond = false
 	}
 
-	if len(in.GeofenceIds) > 0 {
-		query := fmt.Sprintf("%s geofence_id in (%s)", utils.CondSql(firstCond), utils.ArraySqlIn(in.GeofenceIds...))
+	if len(in.Books) > 0 {
+		query := fmt.Sprintf("%s books @> %s", utils.CondSql(firstCond), utils.SqlStringArray(in.Books...))
 		buffer.WriteString(query)
 		firstCond = false
 	}
 
-	if len(in.RoomIds) > 0 {
-		query := fmt.Sprintf("%s room_id in (%s)", utils.CondSql(firstCond), utils.ArraySqlIn(in.RoomIds...))
+	if len(in.Tags) > 0 {
+		query := fmt.Sprintf("%s tags @> %s", utils.CondSql(firstCond), utils.SqlIntegerArray(in.Tags...))
 		buffer.WriteString(query)
 		firstCond = false
 	}
 
-	if len(in.FloorsIds) > 0 {
-		query := fmt.Sprintf("%s floor_id in (%s)", utils.CondSql(firstCond), utils.ArraySqlIn(in.FloorsIds...))
+	if in.Point != nil && in.Radius > 0 {
+		query := fmt.Sprintf("%s floor_id in (%s)", utils.CondSql(firstCond),
+			utils.SqlWithIn(in.Point.Coordinates.Longitude, in.Point.Coordinates.Latitude, int(in.Radius)))
 		buffer.WriteString(query)
 		firstCond = false
 	}
 
-	if len(in.Floors) > 0 {
-		query := fmt.Sprintf("%s floor in (%s)", utils.CondSql(firstCond), utils.ArraySqlIn(in.Floors...))
-		buffer.WriteString(query)
-		firstCond = false
-	}
-
-	if in.EndTime > 0 {
+	if in.StartTime > 0 && in.EndTime > 0 {
 		query := fmt.Sprintf("%s update_time between '%d' and '%d' ", utils.CondSql(firstCond), in.StartTime, in.EndTime)
 		buffer.WriteString(query)
 		firstCond = false
@@ -214,12 +141,12 @@ func (m *MetaTable) List(in *svc.ListEchoRequest) (string, []interface{}) {
 	return buffer.String(), nil
 }
 
-func (m *MetaTable) Delete(ids ...string) (string, []interface{}) {
-	query := fmt.Sprintf("delete from %s where %s in (%s);", m.Name, m.PrimaryColumn().Name, utils.ArraySqlIn(ids...))
+func (m *EchoDDL) Delete(ids ...string) (string, []interface{}) {
+	query := fmt.Sprintf("delete from %s where %s in (%s);", m.Table(), "id", utils.SqlStringIn(ids...))
 	return query, nil
 }
 
-func (m *MetaTable) Get(ids ...string) (string, []interface{}) {
-	query := fmt.Sprintf("select * from %s where %s in (%s);", m.Name, m.PrimaryColumn().Name, utils.ArraySqlIn(ids...))
+func (m *EchoDDL) Get(ids ...string) (string, []interface{}) {
+	query := fmt.Sprintf("select * from %s where %s in (%s);", m.Table(), "id", utils.SqlStringIn(ids...))
 	return query, nil
 }

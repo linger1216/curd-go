@@ -85,7 +85,7 @@ func CondSql(first bool) string {
 	return " and"
 }
 
-func ArraySqlIn(ids ...string) string {
+func SqlStringIn(ids ...string) string {
 	var buffer bytes.Buffer
 	for _, v := range ids {
 		buffer.WriteString("'")
@@ -99,6 +99,56 @@ func ArraySqlIn(ids ...string) string {
 		return temp[:size-1]
 	}
 	return `''`
+}
+
+func SqlIntegerIn(ids ...int) string {
+	var buffer bytes.Buffer
+	for _, v := range ids {
+		buffer.WriteString("'")
+		buffer.WriteString(Int64ToString(int64(v)))
+		buffer.WriteString("'")
+		buffer.WriteString(",")
+	}
+	temp := buffer.String()
+	size := len(temp)
+	if size > 0 {
+		return temp[:size-1]
+	}
+	return `''`
+}
+
+func SqlIntegerArray(ids ...int) string {
+	var buffer bytes.Buffer
+	buffer.WriteString("array[")
+	for i, v := range ids {
+		//buffer.WriteString("'")
+		buffer.WriteString(Int64ToString(int64(v)))
+		//buffer.WriteString("'")
+		if i < len(ids)-1 {
+			buffer.WriteString(",")
+		}
+	}
+	buffer.WriteString("]")
+	return `array[]`
+}
+
+func SqlStringArray(ids ...string) string {
+	var buffer bytes.Buffer
+	buffer.WriteString("array[")
+	for i, v := range ids {
+		buffer.WriteString("'")
+		buffer.WriteString(v)
+		buffer.WriteString("'")
+		if i < len(ids)-1 {
+			buffer.WriteString(",")
+		}
+	}
+	buffer.WriteString("]")
+	return `array[]`
+}
+
+func SqlWithIn(lng, lat float64, radius int) string {
+	return fmt.Sprintf(`ST_DWithin(ST_GeomFromText('POINT(%f %f)', 4326)::geography, geometry::geography, %d)`, lng, lat, radius)
 }
 
 func ToInt64(v interface{}) int64 {

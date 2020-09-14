@@ -1,3 +1,8 @@
 server:
   debugAddr: ":21211"
   httpAddr: ":21212"
+
+postgres:
+  uri: postgres://lid.guan:@localhost:15432/zhigan?sslmode=disable
+  maxIdle: 10
+  maxOpen: 100

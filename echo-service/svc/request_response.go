@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	jsoniter "github.com/json-iterator/go"
+	"github.com/linger1216/go-front/geom"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -150,18 +151,17 @@ func DecodeHTTPUpdateEchoRequest(c *gin.Context) (interface{}, error) {
 }
 
 type ListEchoRequest struct {
-	Header          bool     `form:"header" json:"header"   yaml:"header" `
-	BoundingAreaIds []string `form:"bounding_area_id" json:"bounding_area_ids" yaml:"bounding_area_ids" `
-	AccessKeys      []string `form:"access_key"  json:"access_keys" yaml:"access_keys" `
-	Names           []string `form:"name"  json:"names" yaml:"names" `
-	GeofenceIds     []string `form:"geofence_id" json:"geofence_ids" yaml:"geofence_ids" `
-	Floors          []string `form:"floor" json:"floors" yaml:"floors" `
-	FloorsIds       []string `form:"floors_id" json:"floors_ids,omitempty" yaml:"floors_ids" `
-	RoomIds         []string `form:"room_id" json:"room_ids" yaml:"room_ids" `
-	StartTime       int64    `form:"start_time" json:"start_time" yaml:"start_time" `
-	EndTime         int64    `form:"end_time" json:"end_time" yaml:"end_time" `
-	CurrentPage     uint64   `form:"current_page" json:"current_page" yaml:"current_page" `
-	PageSize        uint64   `form:"page_size" json:"page_size" yaml:"page_size" `
+	Header      bool        `form:"header" json:"header"   yaml:"header" `
+	Ages        []int       `form:"age" json:"ages" yaml:"ages" `
+	Names       []string    `form:"name"  json:"names" yaml:"names" `
+	Books       []string    `form:"book" json:"books" yaml:"books" `
+	Tags        []int       `form:"tag" json:"tags,omitempty" yaml:"tags" `
+	Point       *geom.Point `form:"point" json:"point,omitempty" yaml:"point" `
+	Radius      float64     `form:"radius" json:"radius,omitempty" yaml:"radius" `
+	StartTime   int64       `form:"start_time" json:"start_time" yaml:"start_time" `
+	EndTime     int64       `form:"end_time" json:"end_time" yaml:"end_time" `
+	CurrentPage uint64      `form:"current_page" json:"current_page" yaml:"current_page" `
+	PageSize    uint64      `form:"page_size" json:"page_size" yaml:"page_size" `
 }
 
 type ListEchoResponse struct {

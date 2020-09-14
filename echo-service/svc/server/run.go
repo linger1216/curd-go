@@ -13,8 +13,8 @@ import (
 	"syscall"
 )
 
-func NewEndpoints() svc.Endpoints {
-	service := handlers.NewService()
+func NewEndpoints(reader config.Reader) svc.Endpoints {
+	service := handlers.NewService(reader)
 	service = handlers.WrapService(service)
 	endpoints := svc.Endpoints{
 		CreateEchoEndpoint: svc.MakeCreateEchoEndpoint(service),
@@ -43,7 +43,7 @@ func Run(reader config.Reader) {
 	ch := make(chan error)
 	go interruptHandler(ch)
 
-	endpoints := NewEndpoints()
+	endpoints := NewEndpoints(reader)
 
 	// Debug listener.
 	go func() {

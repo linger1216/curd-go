@@ -13,7 +13,7 @@ type TableInfo struct {
 	Columns  []*ColumnInfo
 }
 
-func (c *TableInfo) toGolangDefinition(annotation bool) string {
+func (c *TableInfo) ToGolangDefinition(annotation bool) string {
 	var buf bytes.Buffer
 	buf.WriteString(fmt.Sprintf("type %s struct {\n", utils.Case2Camel(c.Name)))
 	for _, v := range c.Columns {

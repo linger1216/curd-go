@@ -3,7 +3,9 @@ package svc
 import "net/http"
 
 var (
-	StatusInternalServerError = NewError(http.StatusInternalServerError, "Status Internal Server Error")
+	ErrInvalidPara    = NewError(http.StatusBadRequest, "invalid para")
+	ErrNotFound       = NewError(http.StatusNotFound, "not found")
+	ErrInternalServer = NewError(http.StatusInternalServerError, "internal server error")
 )
 
 type Error struct {

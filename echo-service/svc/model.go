@@ -1,14 +1,14 @@
 package svc
 
+import "github.com/linger1216/go-front/geom"
+
 type Echo struct {
-	Id             string   `json:"id" yaml:"id" `
-	BoundingAreaId string   `json:"boundingAreaId" yaml:"boundingAreaId" `
-	AccessKey      string   `json:"accessKey" yaml:"accessKey" `
-	GeofenceId     string   `json:"geofenceId" yaml:"geofenceId" `
-	FloorId        string   `json:"floorId" yaml:"floorId" `
-	Floor          string   `json:"floor" yaml:"floor" `
-	RoomId         string   `json:"roomId" yaml:"roomId" `
-	CreateTime     int64    `json:"createTime" yaml:"createTime" `
-	UpdateTime     int64    `json:"updateTime" yaml:"updateTime" `
-	Macs           []string `json:"macs"`
+	Id         string         `json:"id" yaml:"id" `
+	Age        int            `json:"age"`
+	Name       string         `json:"name"`
+	Geometry   *geom.Geometry `json:"geometry"`
+	Books      []string       `json:"books"`
+	Tags       []int          `json:"tags"`
+	CreateTime int64          `json:"create_time"`
+	UpdateTime int64          `json:"update_time"`
 }
