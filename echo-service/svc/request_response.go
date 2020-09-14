@@ -10,6 +10,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -217,6 +218,23 @@ func DecodeHTTPListEchoRequest(c *gin.Context) (interface{}, error) {
 	req.Point.SpatialReference = c.Query("spatial_reference")
 	req.Radius = utils.StringToFloat(c.Query("radius"))
 
+	if str := c.Query("start_time"); len(str) > 0 {
+		req.StartTime = utils.StringToInt64(str)
+	}
+	if str := c.Query("end_time"); len(str) > 0 {
+		req.EndTime = utils.StringToInt64(str)
+	}
+
+	if str := c.Query("current_page"); len(str) > 0 {
+		page, _ := strconv.Atoi(str)
+		req.CurrentPage = uint64(page)
+	}
+
+	if str := c.Query("page_size"); len(str) > 0 {
+		size, _ := strconv.Atoi(str)
+		req.PageSize = uint64(size)
+	}
+
 	return req, nil
 }
 
@@ -255,6 +273,34 @@ func DecodeHTTPListHeadEchoRequest(c *gin.Context) (interface{}, error) {
 		return nil, err
 	}
 	req.Header = true
+
+	lng := c.Query("longitude")
+	lat := c.Query("latitude")
+
+	req.Point = &geom.Point{}
+
+	if len(lng) > 0 && len(lat) > 0 {
+		req.Point.Coordinates = []float64{utils.StringToFloat(lng), utils.StringToFloat(lat)}
+	}
+
+	req.Point.SpatialReference = c.Query("spatial_reference")
+	req.Radius = utils.StringToFloat(c.Query("radius"))
+	if str := c.Query("start_time"); len(str) > 0 {
+		req.StartTime = utils.StringToInt64(str)
+	}
+	if str := c.Query("end_time"); len(str) > 0 {
+		req.EndTime = utils.StringToInt64(str)
+	}
+
+	if str := c.Query("current_page"); len(str) > 0 {
+		page, _ := strconv.Atoi(str)
+		req.CurrentPage = uint64(page)
+	}
+
+	if str := c.Query("page_size"); len(str) > 0 {
+		size, _ := strconv.Atoi(str)
+		req.PageSize = uint64(size)
+	}
 	return req, nil
 }
 

@@ -135,7 +135,7 @@ func (m *EchoDDL) List(in *svc.ListEchoRequest) (string, []interface{}) {
 	}
 
 	if in.Point != nil && in.Radius > 0 {
-		query := fmt.Sprintf("%s floor_id in (%s)", utils.CondSql(firstCond),
+		query := fmt.Sprintf("%s %s", utils.CondSql(firstCond),
 			utils.SqlWithIn(in.Point.Coordinates[0], in.Point.Coordinates[1], int(in.Radius)))
 		buffer.WriteString(query)
 		firstCond = false

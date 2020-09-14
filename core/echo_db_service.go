@@ -92,10 +92,9 @@ func (f *EchoDBService) ListEcho(ctx context.Context, in *svc.ListEchoRequest) (
 			return nil, err
 		}
 		resp.Echos = ret
-	}
-
-	if len(resp.Echos) == 0 {
-		return nil, svc.ErrNotFound
+		if len(resp.Echos) == 0 {
+			return nil, svc.ErrNotFound
+		}
 	}
 	return resp, nil
 }

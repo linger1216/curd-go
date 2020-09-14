@@ -35,8 +35,28 @@ func headersToContext(ctx context.Context, r *http.Request) context.Context {
 	return ctx
 }
 
+func writeHeader(w http.ResponseWriter, kvs []*KVResponse) error {
+	for i := range kvs {
+		w.Header().Set(kvs[i].Key, kvs[i].Value)
+	}
+	return nil
+}
+
 func EncodeHTTPGenericResponse(_ context.Context, w http.ResponseWriter, response interface{}) error {
 	encoder := jsoniter.ConfigFastest.NewEncoder(w)
 	encoder.SetEscapeHTML(false)
+	switch x := response.(type) {
+	case *CreateEchoResponse:
+		return encoder.Encode(x.Ids)
+	case *DeleteEchoResponse:
+	case *UpdateEchoResponse:
+	case *ListEchoResponse:
+		if len(x.Headers) > 0 {
+			return writeHeader(w, x.Headers)
+		}
+		return encoder.Encode(x.Echos)
+	case *GetEchoResponse:
+		return encoder.Encode(x.Echos)
+	}
 	return encoder.Encode(response)
 }
