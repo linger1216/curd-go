@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/linger1216/go-front/geom"
+	"github.com/linger1216/go-front/utils"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -26,7 +27,7 @@ type CreateEchoResponse struct {
 }
 
 func DecodeHTTPCreateEchoRequest(c *gin.Context) (interface{}, error) {
-	var req CreateEchoRequest
+	req := &CreateEchoRequest{}
 	var reader io.ReadCloser
 	var err error
 	switch c.GetHeader("Content-Encoding") {
@@ -65,7 +66,7 @@ type DeleteEchoResponse struct {
 }
 
 func DecodeHTTPDeleteEchoRequestV2(c *gin.Context) (interface{}, error) {
-	var req DeleteEchoRequest
+	req := &DeleteEchoRequest{}
 	var reader io.ReadCloser
 	var err error
 	switch c.GetHeader("Content-Encoding") {
@@ -106,7 +107,7 @@ func DecodeHTTPDeleteEchoRequestV2(c *gin.Context) (interface{}, error) {
 			fmt.Sprintf("request ids '%s': cannot parse request params", ids))
 	}
 	req.Ids = ids
-	return &req, err
+	return req, err
 }
 
 type UpdateEchoRequest struct {
@@ -117,7 +118,7 @@ type UpdateEchoResponse struct {
 }
 
 func DecodeHTTPUpdateEchoRequest(c *gin.Context) (interface{}, error) {
-	var req UpdateEchoRequest
+	req := &UpdateEchoRequest{}
 
 	var reader io.ReadCloser
 	var err error
@@ -170,7 +171,7 @@ type ListEchoResponse struct {
 }
 
 func DecodeHTTPListEchoRequest(c *gin.Context) (interface{}, error) {
-	var req ListEchoRequest
+	req := &ListEchoRequest{}
 	var reader io.ReadCloser
 	var err error
 	switch c.GetHeader("Content-Encoding") {
@@ -203,11 +204,24 @@ func DecodeHTTPListEchoRequest(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	lng := c.Query("longitude")
+	lat := c.Query("latitude")
+
+	req.Point = &geom.Point{}
+
+	if len(lng) > 0 && len(lat) > 0 {
+		req.Point.Coordinates = []float64{utils.StringToFloat(lng), utils.StringToFloat(lat)}
+	}
+
+	req.Point.SpatialReference = c.Query("spatial_reference")
+	req.Radius = utils.StringToFloat(c.Query("radius"))
+
 	return req, nil
 }
 
 func DecodeHTTPListHeadEchoRequest(c *gin.Context) (interface{}, error) {
-	var req ListEchoRequest
+	req := &ListEchoRequest{}
 	var reader io.ReadCloser
 	var err error
 	switch c.GetHeader("Content-Encoding") {
@@ -253,7 +267,7 @@ type GetEchoResponse struct {
 }
 
 func DecodeHTTPGetEchoRequest(c *gin.Context) (interface{}, error) {
-	var req GetEchoRequest
+	req := &GetEchoRequest{}
 	var reader io.ReadCloser
 	var err error
 	switch c.GetHeader("Content-Encoding") {
@@ -294,5 +308,5 @@ func DecodeHTTPGetEchoRequest(c *gin.Context) (interface{}, error) {
 			fmt.Sprintf("request ids '%s': cannot parse request params", ids))
 	}
 	req.Ids = ids
-	return &req, err
+	return req, err
 }

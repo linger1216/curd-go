@@ -53,7 +53,7 @@ func ValuesPlaceHolder(start int, count int) string {
 	return ret.String()
 }
 
-func ValueInjectAndGeometry(start int, count int, geometryPos ...int) string {
+func ValuePlaceHolderAndGeometry(start int, count int, geometryPos ...int) string {
 	var ret bytes.Buffer
 	ret.WriteByte('(')
 	for i := 1; i <= count; i++ {
@@ -128,8 +128,8 @@ func SqlIntegerArray(ids ...int) string {
 			buffer.WriteString(",")
 		}
 	}
-	buffer.WriteString("]")
-	return `array[]`
+	buffer.WriteString("]::integer[]")
+	return buffer.String()
 }
 
 func SqlStringArray(ids ...string) string {
@@ -143,8 +143,8 @@ func SqlStringArray(ids ...string) string {
 			buffer.WriteString(",")
 		}
 	}
-	buffer.WriteString("]")
-	return `array[]`
+	buffer.WriteString("]::varchar[]")
+	return buffer.String()
 }
 
 func SqlWithIn(lng, lat float64, radius int) string {

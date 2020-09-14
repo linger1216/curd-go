@@ -19,6 +19,10 @@ func NewEchoDDL() *EchoDDL {
 	return ret
 }
 
+func (m *EchoDDL) Select() string {
+	return `id, name, age, st_asgeojson(geometry) as geometry, array_to_string(tags, ',') as tags, array_to_string(books, ',') as books, create_time, update_time`
+}
+
 func (m *EchoDDL) Table() string {
 	return `echo_table`
 }
@@ -28,17 +32,28 @@ func (m *EchoDDL) ColumnsString() string {
 }
 
 func (m *EchoDDL) CreateTableDDL() string {
-	var buf bytes.Buffer
-	return buf.String()
+	return fmt.Sprintf(`
+create table if not exists %s
+(
+	id       character varying primary key,
+	age      integer,
+	name     character varying,
+  geometry geometry(Geometry,4326),
+  books    character varying[],
+  tags     integer[],
+  create_time   bigint default (date_part('epoch'::text, now()))::bigint,
+  update_time   bigint default (date_part('epoch'::text, now()))::bigint
+);`, m.Table())
 }
 
 func (m *EchoDDL) IndexTableDDL() string {
-	var buf bytes.Buffer
-	return buf.String()
+	// 需要加上if not exists
+	return `
+CREATE UNIQUE INDEX if not exists echo_table_pkey ON public.echo_table USING btree (id);`
 }
 
 func (m *EchoDDL) OnConflictDDL() string {
-	return `
+	return fmt.Sprintf(`
 on conflict (id) 
 do update set 
 age = excluded.age, 
@@ -46,8 +61,8 @@ name = excluded.name,
 geometry = excluded.geometry, 
 books = excluded.books, 
 tags = excluded.tags,
-update_time = GREATEST(asset.update_time, excluded.update_time);
-`
+update_time = GREATEST(%s.update_time, excluded.update_time);
+`, m.Table())
 }
 
 func (m *EchoDDL) Upsert(echos ...*svc.Echo) (string, []interface{}) {
@@ -77,7 +92,7 @@ func (m *EchoDDL) Upsert(echos ...*svc.Echo) (string, []interface{}) {
 		if err != nil {
 			panic(err)
 		}
-		values = append(values, utils.ValuesPlaceHolder(i*len(cols), len(cols)))
+		values = append(values, utils.ValuePlaceHolderAndGeometry(i*len(cols), len(cols), 4))
 		args = append(args, v.Id, v.Age, v.Name, geometry, pq.Array(v.Books), pq.Array(v.Tags), createTime, updateTime)
 	}
 
@@ -92,7 +107,7 @@ func (m *EchoDDL) List(in *svc.ListEchoRequest) (string, []interface{}) {
 	if in.Header {
 		buffer.WriteString(fmt.Sprintf("select count(1) from %s", m.Table()))
 	} else {
-		buffer.WriteString(fmt.Sprintf("select *,st_asgeojson(geometry) from %s", m.Table()))
+		buffer.WriteString(fmt.Sprintf("select %s from %s", m.Select(), m.Table()))
 	}
 
 	if len(in.Ages) > 0 {
@@ -121,7 +136,7 @@ func (m *EchoDDL) List(in *svc.ListEchoRequest) (string, []interface{}) {
 
 	if in.Point != nil && in.Radius > 0 {
 		query := fmt.Sprintf("%s floor_id in (%s)", utils.CondSql(firstCond),
-			utils.SqlWithIn(in.Point.Coordinates.Longitude, in.Point.Coordinates.Latitude, int(in.Radius)))
+			utils.SqlWithIn(in.Point.Coordinates[0], in.Point.Coordinates[1], int(in.Radius)))
 		buffer.WriteString(query)
 		firstCond = false
 	}
@@ -147,6 +162,6 @@ func (m *EchoDDL) Delete(ids ...string) (string, []interface{}) {
 }
 
 func (m *EchoDDL) Get(ids ...string) (string, []interface{}) {
-	query := fmt.Sprintf("select * from %s where %s in (%s);", m.Table(), "id", utils.SqlStringIn(ids...))
+	query := fmt.Sprintf("select %s from %s where %s in (%s);", m.Select(), m.Table(), "id", utils.SqlStringIn(ids...))
 	return query, nil
 }

@@ -51,6 +51,7 @@ func (f *EchoDBService) CreateEcho(ctx context.Context, in *svc.CreateEchoReques
 
 func (f *EchoDBService) DeleteEcho(ctx context.Context, in *svc.DeleteEchoRequest) (*svc.DeleteEchoResponse, error) {
 	query, args := f.ddl.Delete(in.Ids...)
+	fmt.Printf("%s\n", query)
 	_, err := f.db.Exec(query, args...)
 	if err != nil {
 		return nil, err
@@ -86,7 +87,7 @@ func (f *EchoDBService) ListEcho(ctx context.Context, in *svc.ListEchoRequest) (
 			Value: utils.Int64ToString(count),
 		})
 	} else {
-		ret, err := f.query(query, args)
+		ret, err := f.query(query, args...)
 		if err != nil {
 			return nil, err
 		}

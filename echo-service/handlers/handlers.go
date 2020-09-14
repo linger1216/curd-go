@@ -35,6 +35,9 @@ func (f *EchoService) UpdateEcho(ctx context.Context, in *svc.UpdateEchoRequest)
 }
 
 func (f *EchoService) ListEcho(ctx context.Context, in *svc.ListEchoRequest) (*svc.ListEchoResponse, error) {
+	if in.PageSize == 0 {
+		in.PageSize = 10
+	}
 	return f.db.ListEcho(ctx, in)
 }
 
