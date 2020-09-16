@@ -48,8 +48,7 @@ create table if not exists %s
 
 func (m *EchoDDL) IndexTableDDL() string {
 	// 需要加上if not exists
-	return `
-CREATE UNIQUE INDEX if not exists echo_table_pkey ON public.echo_table USING btree (id);`
+	return ` CREATE UNIQUE INDEX if not exists echo_table_pkey ON public.echo_table USING btree (id);`
 }
 
 func (m *EchoDDL) OnConflictDDL() string {

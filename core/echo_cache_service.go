@@ -5,33 +5,39 @@ import (
 	"github.com/linger1216/go-front/echo-service/svc"
 )
 
+type EchoCacheConfig struct {
+	UseCache    bool `yaml:"useCache"`
+	CacheExpire int  `yaml:"cacheExpire"`
+	CacheSize   int  `yaml:"cacheSize"`
+}
+
 type EchoCacheService struct {
 }
 
-func NewEchoCacheService() svc.EchoServer {
+func (e *EchoCacheService) UpdateEcho(ctx context.Context, in *svc.UpdateEchoRequest) error {
+	panic("implement me")
+}
+
+func (e *EchoCacheService) ListEcho(ctx context.Context, in *svc.ListEchoRequest) (*svc.ListEchoResponse, error) {
+	panic("implement me")
+}
+
+func (e *EchoCacheService) UpdateListEcho(ctx context.Context, in *svc.ListEchoRequest, resp *svc.ListEchoResponse) error {
+	panic("implement me")
+}
+
+func (e *EchoCacheService) GetEcho(ctx context.Context, in *svc.GetEchoRequest) (*svc.GetEchoResponse, error) {
+	panic("implement me")
+}
+
+func (e *EchoCacheService) UpdateGetEcho(ctx context.Context, in *svc.GetEchoRequest, resp *svc.GetEchoResponse) error {
+	panic("implement me")
+}
+
+func (e *EchoCacheService) Close() error {
+	panic("implement me")
+}
+
+func NewEchoCacheService(cfg *EchoCacheConfig) svc.EchoCacheServer {
 	return &EchoCacheService{}
-}
-
-func (f *EchoCacheService) CreateEcho(ctx context.Context, in *svc.CreateEchoRequest) (*svc.CreateEchoResponse, error) {
-	return nil, nil
-}
-
-func (f *EchoCacheService) DeleteEcho(ctx context.Context, in *svc.DeleteEchoRequest) (*svc.DeleteEchoResponse, error) {
-	return nil, nil
-}
-
-func (f *EchoCacheService) UpdateEcho(ctx context.Context, in *svc.UpdateEchoRequest) (*svc.UpdateEchoResponse, error) {
-	return nil, nil
-}
-
-func (f *EchoCacheService) ListEcho(ctx context.Context, in *svc.ListEchoRequest) (*svc.ListEchoResponse, error) {
-	return nil, nil
-}
-
-func (f *EchoCacheService) GetEcho(ctx context.Context, in *svc.GetEchoRequest) (*svc.GetEchoResponse, error) {
-	return nil, nil
-}
-
-func (f *EchoCacheService) Close() error {
-	return nil
 }
