@@ -1,4 +1,4 @@
-package svc
+package handlers
 
 /**
  * @api {post} /eg/echo Create Echo
