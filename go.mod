@@ -18,7 +18,7 @@ require (
 	github.com/lib/pq v1.8.0
 	github.com/manifoldco/promptui v0.7.0
 	github.com/prometheus/client_golang v1.7.1
-	github.com/qichengzx/coordtransform v0.0.0-20190827102347-a32477f4ad1f // indirect
+	github.com/qichengzx/coordtransform v0.0.0-20190827102347-a32477f4ad1f
 	github.com/stretchr/testify v1.6.1 // indirect
 	golang.org/x/sys v0.0.0-20200824131525-c12d262b63d8 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
