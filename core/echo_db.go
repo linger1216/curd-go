@@ -11,57 +11,17 @@ import (
 	"time"
 )
 
-type EchoDDL struct {
-}
-
 func NewEchoDDL() *EchoDDL {
-	ret := &EchoDDL{}
+	ret := &EchoDDL{Name: "echo_test"}
+	ret.columns = append(ret.columns, &MetaColumn{Name: "id", Type: "character varying", Primary: true})
+	ret.columns = append(ret.columns, &MetaColumn{Name: "age", Type: "integer"})
+	ret.columns = append(ret.columns, &MetaColumn{Name: "name", Type: "character varying"})
+	ret.columns = append(ret.columns, &MetaColumn{Name: "geometry", Type: "geometry(Geometry,4326)", Index: true})
+	ret.columns = append(ret.columns, &MetaColumn{Name: "books", Type: "character varying[]"})
+	ret.columns = append(ret.columns, &MetaColumn{Name: "tags", Type: "integer[]"})
+	ret.columns = append(ret.columns, &MetaColumn{Name: "create_time", Type: "bigint", Default: `(date_part('epoch'::text, now()))::bigint`})
+	ret.columns = append(ret.columns, &MetaColumn{Name: "update_time", Type: "bigint", Default: `(date_part('epoch'::text, now()))::bigint`})
 	return ret
-}
-
-func (m *EchoDDL) Select() string {
-	return `id, name, age, st_asgeojson(geometry) as geometry, array_to_string(tags, ',') as tags, array_to_string(books, ',') as books, create_time, update_time`
-}
-
-func (m *EchoDDL) Table() string {
-	return `echo_table`
-}
-
-func (m *EchoDDL) ColumnsString() string {
-	return `id,age,name,geometry,books,tags,create_time,update_time`
-}
-
-func (m *EchoDDL) CreateTableDDL() string {
-	return fmt.Sprintf(`
-create table if not exists %s
-(
-	id       character varying primary key,
-	age      integer,
-	name     character varying,
-  geometry geometry(Geometry,4326),
-  books    character varying[],
-  tags     integer[],
-  create_time   bigint default (date_part('epoch'::text, now()))::bigint,
-  update_time   bigint default (date_part('epoch'::text, now()))::bigint
-);`, m.Table())
-}
-
-func (m *EchoDDL) IndexTableDDL() string {
-	// 需要加上if not exists
-	return ` CREATE UNIQUE INDEX if not exists echo_table_pkey ON public.echo_table USING btree (id);`
-}
-
-func (m *EchoDDL) OnConflictDDL() string {
-	return fmt.Sprintf(`
-on conflict (id) 
-do update set 
-age = excluded.age, 
-name = excluded.name, 
-geometry = excluded.geometry, 
-books = excluded.books, 
-tags = excluded.tags,
-update_time = GREATEST(%s.update_time, excluded.update_time);
-`, m.Table())
 }
 
 func (m *EchoDDL) Upsert(echos ...*svc.Echo) (string, []interface{}) {
@@ -163,4 +123,148 @@ func (m *EchoDDL) Delete(ids ...string) (string, []interface{}) {
 func (m *EchoDDL) Get(ids ...string) (string, []interface{}) {
 	query := fmt.Sprintf("select %s from %s where %s in (%s);", m.Select(), m.Table(), "id", utils.SqlStringIn(ids...))
 	return query, nil
+}
+
+type MetaColumn struct {
+	Name    string `json:"Name"`
+	Type    string `json:"type"` // character varying, bigint, integer, geometry(Geometry,4326), character varying[], integer[]
+	Primary bool   `json:"primary"`
+	Index   bool   `json:"index"`
+	Unique  bool   `json:"unique"`
+	Default string `json:"default"`
+}
+
+func (m *MetaColumn) ColumnDDL() string {
+	var primary string
+	if m.Primary {
+		primary = "primary key"
+	}
+
+	var defaultVal string
+	if len(m.Default) > 0 {
+		defaultVal = "default " + m.Default
+	}
+
+	return fmt.Sprintf("%s %s %s %s", m.Name, m.Type, primary, defaultVal)
+}
+
+func (m *MetaColumn) Select() string {
+	switch m.Type {
+	case `character varying`:
+		return m.Name
+	case `bigint`:
+		return m.Name
+	case `integer`:
+		return m.Name
+	case `geometry(Geometry,4326)`:
+		return fmt.Sprintf("st_asgeojson(%s) as %s", m.Name, m.Name)
+	case `character varying[]`:
+		return fmt.Sprintf("array_to_string(%s, ',') as %s", m.Name, m.Name)
+	case `integer[]`:
+		return fmt.Sprintf("array_to_string(%s, ',') as %s", m.Name, m.Name)
+	}
+	return ""
+}
+
+func (m *MetaColumn) IndexDDL(table string) string {
+	if m.Primary {
+		return ""
+	}
+	unique := ""
+	if m.Unique {
+		unique = "unique"
+	}
+	engine := ""
+	switch m.Type {
+	case "character varying", "bigint", "integer", "character varying[]", "integer[]":
+		engine = fmt.Sprintf("btree(%s)", m.Name)
+	case "geometry(Geometry,4326)":
+		engine = fmt.Sprintf("gist (geography(%s))", m.Name)
+	}
+	return fmt.Sprintf("create %s index if not exists %s_%s_index ON %s using %s;", unique, table, m.Name, table, engine)
+}
+
+type EchoDDL struct {
+	Name    string
+	columns []*MetaColumn
+}
+
+func (m *EchoDDL) Select() string {
+	arr := make([]string, len(m.columns))
+	for i := range m.columns {
+		arr[i] = m.columns[i].Select()
+	}
+	return strings.Join(arr, ",")
+}
+
+func (m *EchoDDL) Table() string {
+	return m.Name
+}
+
+func (m *EchoDDL) ColumnsString() string {
+	arr := make([]string, len(m.columns))
+	for i := range m.columns {
+		arr[i] = m.columns[i].Name
+	}
+	return strings.Join(arr, ",")
+}
+
+func (m *EchoDDL) CreateTableDDL() string {
+	var buf bytes.Buffer
+	buf.WriteString(fmt.Sprintf("create table if not exists %s", m.Name))
+	buf.WriteString("(\n")
+	for i := range m.columns {
+		buf.WriteString(m.columns[i].ColumnDDL())
+		if i < len(m.columns)-1 {
+			buf.WriteByte(',')
+		}
+		buf.WriteByte('\n')
+	}
+	buf.WriteString(");\n")
+	return buf.String()
+}
+
+func (m *EchoDDL) IndexTableDDL() []string {
+	arr := make([]string, 0)
+	for _, v := range m.columns {
+		if v.Index {
+			arr = append(arr, v.IndexDDL(m.Name))
+		}
+	}
+	return arr
+}
+
+func (m *EchoDDL) DBPrimaryColumn() *MetaColumn {
+	for i := range m.columns {
+		if m.columns[i].Primary {
+			return m.columns[i]
+		}
+	}
+	return nil
+}
+
+func (m *EchoDDL) OnConflictDDL() string {
+	primaryColumn := m.DBPrimaryColumn()
+	var buf bytes.Buffer
+	buf.WriteString(fmt.Sprintf("on conflict (%s)\n", primaryColumn.Name))
+	buf.WriteString("do update set\n")
+
+	for i, v := range m.columns {
+		if v.Primary || v.Name == "create_time" {
+			continue
+		}
+		if v.Name == "update_time" {
+			buf.WriteString(fmt.Sprintf("update_time = GREATEST(%s.update_time, excluded.update_time)", m.Name))
+		} else {
+			buf.WriteString(fmt.Sprintf("%s = excluded.%s", v.Name, v.Name))
+		}
+		if i < len(m.columns)-1 {
+			buf.WriteString(",")
+		} else {
+			buf.WriteString(";")
+		}
+		buf.WriteString("\n")
+	}
+	return buf.String()
+
 }

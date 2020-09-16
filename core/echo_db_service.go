@@ -26,9 +26,11 @@ func NewEchoDBService(db *sqlx.DB) svc.EchoServer {
 	if _, err := server.db.Exec(query); err != nil {
 		panic(err)
 	}
-	query = server.ddl.IndexTableDDL()
-	if _, err := server.db.Exec(query); err != nil {
-		panic(err)
+	indexes := server.ddl.IndexTableDDL()
+	for _, v := range indexes {
+		if _, err := server.db.Exec(v); err != nil {
+			panic(err)
+		}
 	}
 	return server
 }
@@ -187,5 +189,5 @@ func (f *EchoDBService) GetEcho(ctx context.Context, in *svc.GetEchoRequest) (*s
 }
 
 func (f *EchoDBService) Close() error {
-	return nil
+	return f.db.Close()
 }

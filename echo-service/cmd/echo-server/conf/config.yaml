@@ -6,3 +6,8 @@ postgres:
   uri: postgres://lid.guan:@localhost:15432/zhigan?sslmode=disable
   maxIdle: 10
   maxOpen: 100
+
+cache:
+  useCache: true
+  CacheExpire: 60
+  CacheSize: 1024
