@@ -12,8 +12,17 @@ func TestTableInfo_toGolangDefinition(t *testing.T) {
 		MaxOpen: 0,
 	}))
 
+	arr := make([]string, 0)
 	tables, _ := pg.GetInfo()
 	for _, v := range tables {
-		v.toGolangDefinition(true)
+		if v.Name == "echo_table" {
+			arr = append(arr, v.DBSelectColumn())
+			arr = append(arr, v.DBColumns())
+			arr = append(arr, v.DBCreateTableDDL(true))
+			arr = append(arr, v.DBIndexTableDDL()...)
+			arr = append(arr, v.DBOnConflictDDL())
+			arr = append(arr, v.DBUpsert())
+			arr = append(arr, v.DBList())
+		}
 	}
 }

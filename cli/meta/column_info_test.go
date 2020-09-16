@@ -11,5 +11,5 @@ func TestColumnInfo_toGolangMemberDef(t *testing.T) {
 		Primary: false,
 	}
 
-	col.toGolangDefinition(true)
+	col.GolangModelDefinition(true)
 }

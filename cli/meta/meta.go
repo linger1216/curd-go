@@ -114,8 +114,8 @@ func transColumnInfo(prefix string, m map[string]interface{}) (*ColumnInfo, erro
 	if v, ok := m[prefix+"comment"]; ok {
 		ret.Comment = utils.ToString(v)
 	}
-	if v, ok := m[prefix+"primary_key"]; ok && v == "t" {
-		ret.Primary = true
+	if v, ok := m[prefix+"primary_key"]; ok {
+		ret.Primary = v.(bool)
 	}
 	if v, ok := m[prefix+"default"]; ok {
 		ret.Default = utils.ToString(v)
