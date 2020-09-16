@@ -1,4 +1,4 @@
-.PHONY: cross help clean mk dist cpu_torch cpu_pprof mem_torch mem_pprof trace
+.PHONY: cross help clean mk dist cpu_torch cpu_pprof mem_torch mem_pprof trace doc
 
 SERVER_NAME = echo
 DEBUG_PORT = 21211
