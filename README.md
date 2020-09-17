@@ -1,2 +1,3 @@
 # go front template
- apidoc -i echo-service/
+
+gokit+gin+postgres
