@@ -10,10 +10,10 @@ import (
 
 func MakeDebugHandler(addr string) *gin.Engine {
 	engine := gin.Default()
-	pprof.Register(engine)
 	engine.Handle("GET", "/metrics", gin.WrapH(promhttp.Handler()))
 	health := healthcheck.NewHandler()
 	health.AddLivenessCheck("http service", healthcheck.TCPDialCheck(addr, time.Second))
 	engine.Handle("GET", "/health", gin.WrapF(health.LiveEndpoint))
+	pprof.Register(engine)
 	return engine
 }
