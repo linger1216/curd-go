@@ -1,13 +1,11 @@
 package svc
 
 import (
-	"compress/gzip"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/linger1216/go-front/geom"
 	"github.com/linger1216/go-front/utils"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -28,20 +26,7 @@ type CreateEchoResponse struct {
 
 func DecodeHTTPCreateEchoRequest(c *gin.Context) (interface{}, error) {
 	req := &CreateEchoRequest{}
-	var reader io.ReadCloser
-	var err error
-	switch c.GetHeader("Content-Encoding") {
-	case "gzip":
-		reader, err = gzip.NewReader(c.Request.Body)
-		defer reader.Close()
-		if err != nil {
-			return nil, NewError(http.StatusBadRequest, "failed to read the gzip content")
-		}
-	default:
-		reader = c.Request.Body
-	}
-
-	buf, err := ioutil.ReadAll(reader)
+	buf, err := ioutil.ReadAll(c.Request.Body)
 	if err != nil {
 		return nil, NewError(http.StatusBadRequest, "cannot read body of http request")
 	}
@@ -67,20 +52,7 @@ type DeleteEchoResponse struct {
 
 func DecodeHTTPDeleteEchoRequestV2(c *gin.Context) (interface{}, error) {
 	req := &DeleteEchoRequest{}
-	var reader io.ReadCloser
-	var err error
-	switch c.GetHeader("Content-Encoding") {
-	case "gzip":
-		reader, err = gzip.NewReader(c.Request.Body)
-		defer reader.Close()
-		if err != nil {
-			return nil, NewError(http.StatusBadRequest, "failed to read the gzip content")
-		}
-	default:
-		reader = c.Request.Body
-	}
-
-	buf, err := ioutil.ReadAll(reader)
+	buf, err := ioutil.ReadAll(c.Request.Body)
 	if err != nil {
 		return nil, NewError(http.StatusBadRequest, "cannot read body of http request")
 	}
@@ -119,21 +91,7 @@ type UpdateEchoResponse struct {
 
 func DecodeHTTPUpdateEchoRequest(c *gin.Context) (interface{}, error) {
 	req := &UpdateEchoRequest{}
-
-	var reader io.ReadCloser
-	var err error
-	switch c.GetHeader("Content-Encoding") {
-	case "gzip":
-		reader, err = gzip.NewReader(c.Request.Body)
-		defer reader.Close()
-		if err != nil {
-			return nil, NewError(http.StatusBadRequest, "failed to read the gzip content")
-		}
-	default:
-		reader = c.Request.Body
-	}
-
-	buf, err := ioutil.ReadAll(reader)
+	buf, err := ioutil.ReadAll(c.Request.Body)
 	if err != nil {
 		return nil, NewError(http.StatusBadRequest, "cannot read body of http request")
 	}
@@ -172,20 +130,7 @@ type ListEchoResponse struct {
 
 func DecodeHTTPListEchoRequest(c *gin.Context) (interface{}, error) {
 	req := &ListEchoRequest{}
-	var reader io.ReadCloser
-	var err error
-	switch c.GetHeader("Content-Encoding") {
-	case "gzip":
-		reader, err = gzip.NewReader(c.Request.Body)
-		defer reader.Close()
-		if err != nil {
-			return nil, NewError(http.StatusBadRequest, "failed to read the gzip content")
-		}
-	default:
-		reader = c.Request.Body
-	}
-
-	buf, err := ioutil.ReadAll(reader)
+	buf, err := ioutil.ReadAll(c.Request.Body)
 	if err != nil {
 		return nil, NewError(http.StatusBadRequest, "cannot read body of http request")
 	}
@@ -229,21 +174,7 @@ func decodeListEchoRequest(c *gin.Context, req *ListEchoRequest) error {
 
 func DecodeHTTPListHeadEchoRequest(c *gin.Context) (interface{}, error) {
 	req := &ListEchoRequest{}
-	req.Header = true
-	var reader io.ReadCloser
-	var err error
-	switch c.GetHeader("Content-Encoding") {
-	case "gzip":
-		reader, err = gzip.NewReader(c.Request.Body)
-		defer reader.Close()
-		if err != nil {
-			return nil, NewError(http.StatusBadRequest, "failed to read the gzip content")
-		}
-	default:
-		reader = c.Request.Body
-	}
-
-	buf, err := ioutil.ReadAll(reader)
+	buf, err := ioutil.ReadAll(c.Request.Body)
 	if err != nil {
 		return nil, NewError(http.StatusBadRequest, "cannot read body of http request")
 	}
@@ -275,20 +206,7 @@ type GetEchoResponse struct {
 
 func DecodeHTTPGetEchoRequest(c *gin.Context) (interface{}, error) {
 	req := &GetEchoRequest{}
-	var reader io.ReadCloser
-	var err error
-	switch c.GetHeader("Content-Encoding") {
-	case "gzip":
-		reader, err = gzip.NewReader(c.Request.Body)
-		defer reader.Close()
-		if err != nil {
-			return nil, NewError(http.StatusBadRequest, "failed to read the gzip content")
-		}
-	default:
-		reader = c.Request.Body
-	}
-
-	buf, err := ioutil.ReadAll(reader)
+	buf, err := ioutil.ReadAll(c.Request.Body)
 	if err != nil {
 		return nil, NewError(http.StatusBadRequest, "cannot read body of http request")
 	}

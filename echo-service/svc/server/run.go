@@ -37,7 +37,7 @@ func interruptHandler(ch chan<- error) {
 func Run(reader config.Reader) {
 	engine := gin.Default()
 	engine.Use(cors.Default())
-	engine.Use(gzip.Gzip(gzip.DefaultCompression))
+	engine.Use(gzip.Gzip(gzip.DefaultCompression, gzip.WithDecompressFn(gzip.DefaultDecompressHandle)))
 	engine.Use(handlers.CustomizedMiddleware())
 
 	ch := make(chan error)
