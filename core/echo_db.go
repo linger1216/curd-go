@@ -3,12 +3,13 @@ package core
 import (
 	"bytes"
 	"fmt"
+	"strings"
+	"time"
+
 	jsoniter "github.com/json-iterator/go"
 	"github.com/lib/pq"
 	"github.com/linger1216/go-front/echo-service/svc"
 	"github.com/linger1216/go-front/utils"
-	"strings"
-	"time"
 )
 
 func NewEchoDDL() *EchoDDL {
@@ -154,13 +155,13 @@ func (m *MetaColumn) Select() string {
 		return m.Name
 	case `bigint`:
 		return m.Name
-	case `integer`:
+	case `integer`, `int`:
 		return m.Name
 	case `geometry(Geometry,4326)`:
 		return fmt.Sprintf("st_asgeojson(%s) as %s", m.Name, m.Name)
 	case `character varying[]`:
 		return fmt.Sprintf("array_to_string(%s, ',') as %s", m.Name, m.Name)
-	case `integer[]`:
+	case `integer[]`, `int[]`:
 		return fmt.Sprintf("array_to_string(%s, ',') as %s", m.Name, m.Name)
 	}
 	return ""
