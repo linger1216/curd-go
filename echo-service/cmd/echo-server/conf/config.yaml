@@ -3,7 +3,7 @@ server:
   httpAddr: ":21212"
 
 postgres:
-  uri: postgres://lid.guan:@localhost:15432/zhigan?sslmode=disable
+  uri: postgres://lid:@localhost:5432/lid?sslmode=disable
   maxIdle: 10
   maxOpen: 100
 

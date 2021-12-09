@@ -17,7 +17,7 @@ func NewEchoDDL() *EchoDDL {
 	ret.columns = append(ret.columns, &MetaColumn{Name: "id", Type: "character varying", Primary: true})
 	ret.columns = append(ret.columns, &MetaColumn{Name: "age", Type: "integer"})
 	ret.columns = append(ret.columns, &MetaColumn{Name: "name", Type: "character varying"})
-	ret.columns = append(ret.columns, &MetaColumn{Name: "geometry", Type: "geometry(Geometry,4326)", Index: true})
+	ret.columns = append(ret.columns, &MetaColumn{Name: "geometry", Type: "geometry", Index: true})
 	ret.columns = append(ret.columns, &MetaColumn{Name: "books", Type: "character varying[]"})
 	ret.columns = append(ret.columns, &MetaColumn{Name: "tags", Type: "integer[]"})
 	ret.columns = append(ret.columns, &MetaColumn{Name: "create_time", Type: "bigint", Default: `(date_part('epoch'::text, now()))::bigint`})
@@ -128,7 +128,7 @@ func (m *EchoDDL) Get(ids ...string) (string, []interface{}) {
 
 type MetaColumn struct {
 	Name    string `json:"Name"`
-	Type    string `json:"type"` // character varying, bigint, integer, geometry(Geometry,4326), character varying[], integer[]
+	Type    string `json:"type"` // character varying, bigint, integer, geometry, character varying[], integer[]
 	Primary bool   `json:"primary"`
 	Index   bool   `json:"index"`
 	Unique  bool   `json:"unique"`
@@ -157,7 +157,7 @@ func (m *MetaColumn) Select() string {
 		return m.Name
 	case `integer`, `int`:
 		return m.Name
-	case `geometry(Geometry,4326)`:
+	case `geometry`:
 		return fmt.Sprintf("st_asgeojson(%s) as %s", m.Name, m.Name)
 	case `character varying[]`:
 		return fmt.Sprintf("array_to_string(%s, ',') as %s", m.Name, m.Name)
@@ -179,7 +179,7 @@ func (m *MetaColumn) IndexDDL(table string) string {
 	switch m.Type {
 	case "character varying", "bigint", "integer", "character varying[]", "integer[]":
 		engine = fmt.Sprintf("btree(%s)", m.Name)
-	case "geometry(Geometry,4326)":
+	case "geometry":
 		engine = fmt.Sprintf("gist (geography(%s))", m.Name)
 	}
 	return fmt.Sprintf("create %s index if not exists %s_%s_index ON %s using %s;", unique, table, m.Name, table, engine)
