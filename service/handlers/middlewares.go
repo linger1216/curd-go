@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/linger1216/go-front/echo-service/svc"
+	"github.com/linger1216/go-front/service/svc"
 )
 
 func CustomizedMiddleware() gin.HandlerFunc {

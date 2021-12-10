@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/linger1216/go-front/core"
-	"github.com/linger1216/go-front/echo-service/svc"
+	"github.com/linger1216/go-front/service/svc"
 	"github.com/linger1216/go-front/utils"
 	"github.com/linger1216/go-front/utils/config"
 	coordTransform "github.com/qichengzx/coordtransform"
@@ -28,7 +28,13 @@ func NewService(reader config.Reader) svc.EchoServer {
 	if err := reader.ScanKey("cache", cacheCfg); err != nil {
 		cacheCfg.UseCache = false
 	}
-	return &EchoService{db: core.NewEchoDBService(pg), cache: core.NewEchoCacheService(cacheCfg)}
+
+	ddlCfg := &core.DDLConfig{}
+	if err := reader.ScanKey("ddl", ddlCfg); err != nil {
+		panic(err)
+	}
+
+	return &EchoService{db: core.NewEchoDBService(pg, ddlCfg), cache: core.NewEchoCacheService(cacheCfg)}
 }
 
 func (f *EchoService) CreateEcho(ctx context.Context, in *svc.CreateEchoRequest) (*svc.CreateEchoResponse, error) {

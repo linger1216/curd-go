@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/linger1216/go-front/echo-service/svc/server"
+	"github.com/linger1216/go-front/service/svc/server"
 	"github.com/linger1216/go-front/utils/config"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"os"

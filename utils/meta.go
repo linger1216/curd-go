@@ -1,13 +1,27 @@
-package meta
+package utils
 
 import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
-	"github.com/linger1216/go-front/utils"
 )
 
 type PostgresMeta struct {
 	db *sqlx.DB
+}
+
+type ColumnInfo struct {
+	Name    string
+	Type    string
+	Comment string
+	Default string
+	Primary bool
+}
+
+type TableInfo struct {
+	Name     string
+	Comment  string
+	IndexDDL []string
+	Columns  []*ColumnInfo
 }
 
 func NewPostgresMeta(db *sqlx.DB) *PostgresMeta {
@@ -95,10 +109,10 @@ func (p *PostgresMeta) GetColumnInfo(name string) ([]*ColumnInfo, error) {
 func transTableInfo(prefix string, m map[string]interface{}) (*TableInfo, error) {
 	ret := &TableInfo{}
 	if v, ok := m[prefix+"table_name"]; ok {
-		ret.Name = utils.ToString(v)
+		ret.Name = ToString(v)
 	}
 	if v, ok := m[prefix+"comment"]; ok {
-		ret.Comment = utils.ToString(v)
+		ret.Comment = ToString(v)
 	}
 	return ret, nil
 }
@@ -106,26 +120,26 @@ func transTableInfo(prefix string, m map[string]interface{}) (*TableInfo, error)
 func transColumnInfo(prefix string, m map[string]interface{}) (*ColumnInfo, error) {
 	ret := &ColumnInfo{}
 	if v, ok := m[prefix+"name"]; ok {
-		ret.Name = utils.ToString(v)
+		ret.Name = ToString(v)
 	}
 	if v, ok := m[prefix+"type"]; ok {
-		ret.Type = utils.ToString(v)
+		ret.Type = ToString(v)
 	}
 	if v, ok := m[prefix+"comment"]; ok {
-		ret.Comment = utils.ToString(v)
+		ret.Comment = ToString(v)
 	}
 	if v, ok := m[prefix+"primary_key"]; ok {
 		ret.Primary = v.(bool)
 	}
 	if v, ok := m[prefix+"default"]; ok {
-		ret.Default = utils.ToString(v)
+		ret.Default = ToString(v)
 	}
 	return ret, nil
 }
 
 func transIndexDDL(prefix string, m map[string]interface{}) (string, error) {
 	if v, ok := m[prefix+"ddl"]; ok {
-		return utils.ToString(v), nil
+		return ToString(v), nil
 	}
 	return "", nil
 }

@@ -2,7 +2,7 @@ package core
 
 import (
 	"fmt"
-	"github.com/linger1216/go-front/echo-service/svc"
+	"github.com/linger1216/go-front/service/svc"
 	"testing"
 )
 

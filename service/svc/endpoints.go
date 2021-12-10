@@ -2,7 +2,7 @@ package svc
 
 import (
 	"context"
-	"github.com/linger1216/go-front/echo-service/svc/endpoint"
+	"github.com/linger1216/go-front/service/svc/endpoint"
 )
 
 type Endpoints struct {

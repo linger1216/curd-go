@@ -3,7 +3,7 @@ package http
 import (
 	"context"
 	"encoding/json"
-	"github.com/linger1216/go-front/echo-service/svc/endpoint"
+	"github.com/linger1216/go-front/service/svc/endpoint"
 	"net/http"
 )
 

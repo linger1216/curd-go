@@ -8,20 +8,34 @@ import (
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/lib/pq"
-	"github.com/linger1216/go-front/echo-service/svc"
+	"github.com/linger1216/go-front/service/svc"
 	"github.com/linger1216/go-front/utils"
 )
 
-func NewEchoDDL() *EchoDDL {
-	ret := &EchoDDL{Name: "echo_test"}
-	ret.columns = append(ret.columns, &MetaColumn{Name: "id", Type: "character varying", Primary: true})
-	ret.columns = append(ret.columns, &MetaColumn{Name: "age", Type: "integer"})
-	ret.columns = append(ret.columns, &MetaColumn{Name: "name", Type: "character varying"})
-	ret.columns = append(ret.columns, &MetaColumn{Name: "geometry", Type: "geometry", Index: true})
-	ret.columns = append(ret.columns, &MetaColumn{Name: "books", Type: "character varying[]"})
-	ret.columns = append(ret.columns, &MetaColumn{Name: "tags", Type: "integer[]"})
-	ret.columns = append(ret.columns, &MetaColumn{Name: "create_time", Type: "bigint", Default: `(date_part('epoch'::text, now()))::bigint`})
-	ret.columns = append(ret.columns, &MetaColumn{Name: "update_time", Type: "bigint", Default: `(date_part('epoch'::text, now()))::bigint`})
+func NewEchoDDL(conf *DDLConfig) *EchoDDL {
+
+	ret := &EchoDDL{Name: conf.TableName}
+
+	if !conf.AutoDetect {
+		for k := range conf.Schema {
+			if k == "id" {
+				ret.columns = append(ret.columns, &MetaColumn{Name: k, Type: conf.Schema[k], Primary: true})
+			} else if k == "create_time" || k == "update_time" {
+				ret.columns = append(ret.columns, &MetaColumn{Name: k, Type: conf.Schema[k], Default: `(date_part('epoch'::text, now()))::bigint`})
+			} else {
+				ret.columns = append(ret.columns, &MetaColumn{Name: k, Type: conf.Schema[k]})
+			}
+		}
+	}
+
+	//ret.columns = append(ret.columns, &MetaColumn{Name: "id", Type: "character varying", Primary: true})
+	//ret.columns = append(ret.columns, &MetaColumn{Name: "age", Type: "integer"})
+	//ret.columns = append(ret.columns, &MetaColumn{Name: "name", Type: "character varying"})
+	//ret.columns = append(ret.columns, &MetaColumn{Name: "geometry", Type: "geometry", Index: true})
+	//ret.columns = append(ret.columns, &MetaColumn{Name: "books", Type: "character varying[]"})
+	//ret.columns = append(ret.columns, &MetaColumn{Name: "tags", Type: "integer[]"})
+	//ret.columns = append(ret.columns, &MetaColumn{Name: "create_time", Type: "bigint", Default: `(date_part('epoch'::text, now()))::bigint`})
+	//ret.columns = append(ret.columns, &MetaColumn{Name: "update_time", Type: "bigint", Default: `(date_part('epoch'::text, now()))::bigint`})
 	return ret
 }
 

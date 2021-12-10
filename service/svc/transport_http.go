@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
-	svchttp "github.com/linger1216/go-front/echo-service/svc/http"
+	svchttp "github.com/linger1216/go-front/service/svc/http"
 	http "net/http"
 )
 

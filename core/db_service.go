@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	jsoniter "github.com/json-iterator/go"
-	"github.com/linger1216/go-front/echo-service/svc"
 	"github.com/linger1216/go-front/geom"
+	"github.com/linger1216/go-front/service/svc"
 	"github.com/linger1216/go-front/utils"
 	"strings"
 )
@@ -20,8 +20,14 @@ type EchoDBService struct {
 	ddl *EchoDDL
 }
 
-func NewEchoDBService(db *sqlx.DB) svc.EchoServer {
-	server := &EchoDBService{db, NewEchoDDL()}
+type DDLConfig struct {
+	AutoDetect bool              `yaml:"autoDetect"`
+	TableName  string            `yaml:"tableName"`
+	Schema     map[string]string `yaml:"schema"`
+}
+
+func NewEchoDBService(db *sqlx.DB, conf *DDLConfig) svc.EchoServer {
+	server := &EchoDBService{db, NewEchoDDL(conf)}
 	query := server.ddl.CreateTableDDL()
 	if _, err := server.db.Exec(query); err != nil {
 		panic(err)

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	jsoniter "github.com/json-iterator/go"
-	"github.com/linger1216/go-front/echo-service/svc"
+	"github.com/linger1216/go-front/service/svc"
 	"github.com/linger1216/go-front/utils"
 )
 

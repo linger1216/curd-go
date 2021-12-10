@@ -1,0 +1,26 @@
+server:
+  debugAddr: ":21211"
+  httpAddr: ":21212"
+
+postgres:
+  uri: postgres://postgres:@localhost:5432/test?sslmode=disable
+  maxIdle: 10
+  maxOpen: 100
+
+ddl:
+  autoDetect: false
+  tableName: echo
+  schema:
+    id: character varying
+    age: integer
+    name: character varying
+    geometry: geometry
+    books: character varying[]
+    tags: integer[]
+    create_time: bigint
+    update_time: bigint
+
+cache:
+  useCache: true
+  CacheExpire: 60
+  CacheSize: 1024
